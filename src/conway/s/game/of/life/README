@@ -1,0 +1,13 @@
+Rules:
+all regular rules of Conway's game of Life are in effect. There are 2 additional cell types introduced in this version
+A bomb cell and a Healer cell
+Bomb: Explodes next turn and kills all cells around it in a 3x3 radius. Small chance to appear during random cell generation
+and a small chance to appear when a cell is reborn
+Healer: Revives all cells in a 3x3 radius around it on the next turn and then dies. Same spawn mechanics as the bomb
+There are also 3 starting sequences coded into the game. 2 blinkers that go on infinitely and one glider which stops when 
+it hits a wall
+
+I had very minimal challenges when making the game. The only issue I had was with determining how to make the grid
+In the end i settled on making the grid 1 size wider in all directions and setting those cell values to dead
+
+

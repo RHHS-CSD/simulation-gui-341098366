@@ -23,14 +23,18 @@ public class ConwaySGameOfLife {
         int[][] cellsCopy = null;
         int[][] cellNeighbours = null;
         int neighbourCount=0;
+        boolean specialCells=false;
+        boolean nextBoolean = false;
         
         //random start or predetermined sequence
         int start = startGame(kb);
         //random start
         if (start == 0){
             //creating arrays
+            System.out.println("Enable Special Cells?");
+            nextBoolean = kb.nextBoolean();
             cells = initiateArray(kb);
-            assignRandomStates(cells, rn);
+            assignRandomStates(cells, rn, nextBoolean);
             cellsCopy = copyArray(cells);
             cellNeighbours = copyArray(cells);
 
@@ -63,13 +67,15 @@ public class ConwaySGameOfLife {
             System.out.println();
             cellNeighbours = liveNeighbours(cells, cellNeighbours, neighbourCount);
             //check to see which cells to get rid
-            kill(cells, cellsCopy, cellNeighbours, rn);
-            //only bomb when random start
+            kill(cells, cellsCopy, cellNeighbours, rn, nextBoolean);
+            //only use special cells when random start
             if (start ==0){
                 bomb(cells, cellsCopy);
+                heal(cells, cellsCopy);
             }
             //reset cells array
             cells = copyArray(cellsCopy);
+            border(cells);
             int exit = kb.nextInt();
             //exit game when input is 0
             if (exit==0){
@@ -121,21 +127,30 @@ public class ConwaySGameOfLife {
     }
     
     /**
-     * Assign dead or alive values to an array
+     * Assign dead, alive or special cell values to an array
      * @param cellState
      * @param rn 
      */
-    public static void assignRandomStates(int[][] cellState, Random rn){
+    public static void assignRandomStates(int[][] cellState, Random rn, boolean b){
         //assign random states (alive or dead)
         for (int i=1;i<cellState.length-1;i++){
             for (int j=1;j<cellState[i].length-1;j++){
-                //special cell (Bomb)
-                if (rn.nextInt(100)==0){
-                    cellState[i][j]=2;
-                }
-                //alive or dead 
-                else{
-                    cellState[i][j]=rn.nextInt(2);
+                switch (rn.nextInt(60)) {
+                    case 0:
+                        //special cell (Bomb)
+                        if (b==true){
+                            cellState[i][j]=2;
+                            break;
+                        }
+                    case 1:
+                        //special cell (Healer)
+                        if (b==true){
+                            cellState[i][j]=3;
+                            break;
+                        }
+                    default:
+                        cellState[i][j]=rn.nextInt(2);
+                        break;
                 }
                 
             }
@@ -166,6 +181,23 @@ public class ConwaySGameOfLife {
                 System.out.print(cells[i][j]+" ");
             }
             System.out.println();
+        }
+    }
+    
+    /**
+     * Kills all cells on border for formatting reasons
+     * @param cells 
+     */
+    public static void border(int[][] cells){
+        for (int i=0; i< cells.length;i=i+cells.length-1){
+            for (int j =0; j<cells.length;j++){
+                cells[i][j]=0;
+            }
+        }
+        for (int i=0; i<cells.length;i++){
+            for (int j=0;j<cells.length;j=j+cells.length-1){
+                cells[i][j]=0;
+            }
         }
     }
     
@@ -216,17 +248,27 @@ public class ConwaySGameOfLife {
      * @param cells
      * @param cellsCopy
      * @param cellNeighbours 
+     * @param rn 
      */
-    public static void kill(int[][] cells, int[][] cellsCopy, int[][] cellNeighbours, Random rn){
+    public static void kill(int[][] cells, int[][] cellsCopy, int[][] cellNeighbours, Random rn, boolean b){
         for (int i = 1; i < cells.length-1; i++) {
             for (int j = 1; j < cells[i].length-1; j++) {
                 //revive cell if live neighbours = 3
                 if (cells[i][j] == 0 && cellNeighbours[i][j]==3){
-                    if (rn.nextInt(100) == 0){
-                        cellsCopy[i][j] = 2;
-                    }
-                    else{
-                        cellsCopy[i][j] = 1;
+                    switch (rn.nextInt(60)) {
+                        case 0:
+                            if (b==true){
+                                cellsCopy[i][j] = 2;
+                                break;
+                            }
+                        case 1:
+                            if (b==true){
+                                cellsCopy[i][j] = 3;
+                                break;
+                            }
+                        default:
+                            cellsCopy[i][j] = 1;
+                            break;
                     }
                 }
                 //kill live cells if over or underpopulation
@@ -238,16 +280,41 @@ public class ConwaySGameOfLife {
             }
         }
     }
-    
+    /**
+     * Check for bomber cells and explode accordingly
+     * @param cells
+     * @param cellsCopy 
+     */
     public static void bomb(int[][] cells, int[][] cellsCopy){
         for (int i = 1; i < cells.length-1; i++) {
             for (int j = 1; j < cells[i].length-1; j++) {
                 if (cells[i][j] == 2){
+                    //blow up all cells in a 3x3 radius
                     for (int a = -1; a < 2; a++) {
                         for (int b = -1; b < 2; b++) {
                             cellsCopy[i+a][j+b] =0;
                         }
                     }
+                }
+            }
+        }
+    }
+    /**
+     * Check for healer cells and revive accordingly
+     * @param cells
+     * @param cellsCopy 
+     */
+    public static void heal(int[][] cells, int[][] cellsCopy) {
+        for (int i = 1; i < cells.length - 1; i++) {
+            for (int j = 1; j < cells[i].length - 1; j++) {
+                if (cells[i][j] == 3) {
+                    //revive all cells in a 3x3 radius, then healer cell dies
+                    for (int a = -1; a < 2; a++) {
+                        for (int b = -1; b < 2; b++) {
+                            cellsCopy[i + a][j + b] = 1;
+                        }
+                    }
+                    cellsCopy[i][j]=0;
                 }
             }
         }
