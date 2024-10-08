@@ -9,86 +9,17 @@ import java.util.*;
  *
  * @author maxya
  */
-public class ConwaySGameOfLife {
+public class ConwayCopy {
 
     /**
      * @param args the command line arguments
      */
     
-    public ConwaySGameOfLife(){
+    public ConwayCopy(){
         
     }
     
-    public static void main(String[] args) {
-        //initialize variables
-        Scanner kb = new Scanner(System.in);
-        Random rn = new Random();
-        
-        int[][] cells = null;
-        int[][] cellsCopy = null;
-        int[][] cellNeighbours = null;
-        int neighbourCount=0;
-        boolean specialCells=false;
-        boolean nextBoolean = false;
-        
-        //random start or predetermined sequence
-        int start = startGame(kb);
-        //random start
-        if (start == 0){
-            //creating arrays
-            System.out.println("Enable Special Cells?");
-            nextBoolean = kb.nextBoolean();
-            cells = initiateArray(kb);
-            assignRandomStates(cells, rn, nextBoolean);
-            cellsCopy = copyArray(cells);
-            cellNeighbours = copyArray(cells);
-
-        }
-        //premade sequence
-        else if (start == 1){
-            System.out.println("Which Starting Sequence would you like?");
-            System.out.println("Blinker (1), Blinker v2 (2), Glider (3)");
-            int sequence = kb.nextInt();
-            //creating array with premade sequence
-            switch (sequence){
-                case 1:
-                    cells=sequenceOne();
-                    break;
-                case 2:
-                    cells=sequenceTwo();
-                    break;
-                case 3:
-                    cells=sequenceThree();
-                    break;
-                default:
-                    break;
-            }
-            cellsCopy = copyArray(cells);
-            cellNeighbours = copyArray(cells);
-        }
-        while (true) {
-            //Print the grid and display cells
-            printGrid(cells);
-            System.out.println();
-            cellNeighbours = liveNeighbours(cells, cellNeighbours, neighbourCount);
-            //check to see which cells to get rid
-            kill(cells, cellsCopy, cellNeighbours, rn, nextBoolean);
-            //only use special cells when random start
-            if (start ==0){
-                bomb(cells, cellsCopy);
-                heal(cells, cellsCopy);
-            }
-            //reset cells array
-            cells = copyArray(cellsCopy);
-            border(cells);
-            int exit = kb.nextInt();
-            //exit game when input is 0
-            if (exit==0){
-                System.out.println("Ending game");
-                System.exit(0);
-            }
-        }        
-    }
+    
     /**
      * return an integer value depending on user input to start the game
      * @param kb
@@ -327,10 +258,11 @@ public class ConwaySGameOfLife {
     }
     /**
      * Creates a premade cell sequence (Blinker)
+     * @param cells
      * @return array with premade cell sequence (Blinker)
      */
-    public static int[][] sequenceOne(){
-        int[][] cells = new int[5][7];
+    public static int[][] sequenceOne(int[][] cells){
+
         for (int i=2;i<5;i++){
             cells[2][i] = 1;
         }
@@ -338,10 +270,10 @@ public class ConwaySGameOfLife {
     }
     /**
      * Creates a premade cell sequence (Blinker v2)
+     * @param cells
      * @return array with premade cell sequence (Blinker v2)
      */
-    public static int[][] sequenceTwo(){
-        int[][] cells = new int[7][7];
+    public static int[][] sequenceTwo(int[][] cells){
         for (int i=1;i<6;i++){
             if (i%2==0){
                 for (int j=1;j<6;j+=2){
@@ -358,15 +290,48 @@ public class ConwaySGameOfLife {
     }
     /**
      * Creates a premade cell sequence (Glider)
+     * @param cells
      * @return array with premade cell sequence (Glider)
      */
-    public static int[][] sequenceThree(){
-        int[][] cells = new int[10][10];
+    public static int[][] sequenceThree(int[][] cells){
         cells[1][1]=1;
         cells[2][2]=1;
         cells[2][3]=1;
         cells[3][1]=1;
         cells[3][2]=1;
+        return cells;
+    }
+    /**
+     * Counts number of live cells
+     *
+     * @param cells
+     * @return integer representing number of cells alive
+     */
+    public static int countLive(int cells[][]){
+        int liveCells = 0;
+        for (int i = 1; i < cells.length - 1; i++) {
+            for (int j = 1; j < cells.length - 1; j++) {
+                if (cells[i][j] != 0) {
+                    //count number of cells that aren't dead
+                    liveCells++;
+                }
+            }
+        }
+        return liveCells;
+    }
+    /**
+     * resets an array
+     *
+     * @param cells
+     * @return empty array filled with zeroes
+     */
+    public static int[][] reset(int[][] cells){
+        //fill array with zeroes
+        for (int i = 1; i < cells.length - 1; i++) {
+            for (int j = 1; j < cells.length - 1; j++) {
+                cells[i][j] = 0;
+            }
+        }
         return cells;
     }
 }
